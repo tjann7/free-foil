@@ -7,7 +7,7 @@
 
 {-# LANGUAGE PatternSynonyms #-}
 
-module Language.LambdaPi.Syntax.Lex where
+module Language.STLC.Syntax.Lex where
 
 import Prelude
 
@@ -28,7 +28,7 @@ $u = [. \n]          -- universal: any character
 
 -- Symbols and non-identifier-like reserved words
 
-@rsyms = \Π | \λ | \π \₁ | \π \₂ | \𝕌 | \: | \; | \( | \) | \→ | \. | \× | \, | \_
+@rsyms = \λ | \; | \+ | \- | \( | \) | \. | \= | \: | \- \>
 
 :-
 
@@ -44,6 +44,18 @@ $white+ ;
 -- Symbols
 @rsyms
     { tok (eitherResIdent TV) }
+
+-- token NatIdent
+$d +
+    { tok (eitherResIdent T_NatIdent) }
+
+-- token TrueIdent
+t r u e
+    { tok (eitherResIdent T_TrueIdent) }
+
+-- token FalseIdent
+f a l s e
+    { tok (eitherResIdent T_FalseIdent) }
 
 -- token VarIdent
 $l ([\' \_]| ($d | $l)) *
@@ -66,6 +78,9 @@ data Tok
   | TV !String                    -- ^ Identifier.
   | TD !String                    -- ^ Float literal.
   | TC !String                    -- ^ Character literal.
+  | T_NatIdent !String
+  | T_TrueIdent !String
+  | T_FalseIdent !String
   | T_VarIdent !String
   deriving (Eq, Show, Ord)
 
@@ -129,6 +144,9 @@ tokenText t = case t of
   PT _ (TD s)   -> s
   PT _ (TC s)   -> s
   Err _         -> "#error"
+  PT _ (T_NatIdent s) -> s
+  PT _ (T_TrueIdent s) -> s
+  PT _ (T_FalseIdent s) -> s
   PT _ (T_VarIdent s) -> s
 
 -- | Convert a token to a string.
@@ -156,13 +174,13 @@ eitherResIdent tv s = treeFind resWords
 -- | The keywords and symbols of the language organized as binary search tree.
 resWords :: BTree
 resWords =
-  b "compute" 9
-    (b ":" 5
-       (b "," 3 (b ")" 2 (b "(" 1 N N) N) (b "." 4 N N))
-       (b "_" 7 (b ";" 6 N N) (b "check" 8 N N)))
-    (b "\960\8321" 13
-       (b "\928" 11 (b "\215" 10 N N) (b "\955" 12 N N))
-       (b "\8594" 15 (b "\960\8322" 14 N N) (b "\120140" 16 N N)))
+  b "Nat" 11
+    (b "." 6
+       (b "+" 3 (b ")" 2 (b "(" 1 N N) N) (b "->" 5 (b "-" 4 N N) N))
+       (b "=" 9 (b ";" 8 (b ":" 7 N N) N) (b "Bool" 10 N N)))
+    (b "in" 16
+       (b "else" 14 (b "compute" 13 (b "check" 12 N N) N) (b "if" 15 N N))
+       (b "then" 19 (b "let" 18 (b "iszero" 17 N N) N) (b "\955" 20 N N)))
   where
   b s n = B bs (TS bs n)
     where

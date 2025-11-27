@@ -1,4 +1,4 @@
-name: hmx
+name: STLC
 version: 0.2.0
 github: "tjann7/free-foil"
 license: BSD3
@@ -9,7 +9,7 @@ copyright: "2025-2026 Timur Suleymanov"
 extra-source-files:
   - README.md
   - LICENSE
-  - grammar/HMX/Syntax.cf
+  - grammar/STLC/Syntax.cf
 
 synopsis: λΠ-calculus implemented in a few different ways.
 category: Language
@@ -59,20 +59,20 @@ library:
   when:
     - condition: false
       other-modules:
-        - Language.HMX.Syntax.Test
-        - Language.HMX.Syntax.ErrM
-        - Language.HMX.Syntax.Skel
+        - Language.STLC.Syntax.Test
+        - Language.STLC.Syntax.ErrM
+        - Language.STLC.Syntax.Skel
 
 executables:
-  hmx:
-    main: HMX.hs
+  STLC:
+    main: STLC.hs
     source-dirs: app
     ghc-options:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - hmx
+      - STLC
 
 tests:
   spec:
@@ -83,7 +83,7 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - hmx
+      - STLC
       - QuickCheck
       - hspec
       - hspec-discover
@@ -96,11 +96,11 @@ tests:
     main: Main.hs
     other-modules: []
     dependencies:
-      - hmx
+      - STLC
       - doctest-parallel
     when:
       - condition: false
         other-modules:
-          - Language.HMX.Syntax.Test
-          - Language.HMX.Syntax.ErrM
-          - Language.HMX.Syntax.Skel
+          - Language.STLC.Syntax.Test
+          - Language.STLC.Syntax.ErrM
+          - Language.STLC.Syntax.Skel

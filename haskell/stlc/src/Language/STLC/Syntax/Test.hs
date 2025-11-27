@@ -6,7 +6,6 @@ module Main where
 
 import Prelude
   ( ($), (.)
-  , Bool(..)
   , Either(..)
   , Int, (>)
   , String, (++), concat, unlines
@@ -19,12 +18,11 @@ import System.Environment ( getArgs )
 import System.Exit        ( exitFailure )
 import Control.Monad      ( when )
 
-import Language.LambdaPi.Syntax.Abs    ()
-import Language.LambdaPi.Syntax.Layout ( resolveLayout )
-import Language.LambdaPi.Syntax.Lex    ( Token, mkPosToken )
-import Language.LambdaPi.Syntax.Par    ( pProgram, myLexer )
-import Language.LambdaPi.Syntax.Print  ( Print, printTree )
-import Language.LambdaPi.Syntax.Skel   ()
+import Language.STLC.Syntax.Abs   ()
+import Language.STLC.Syntax.Lex   ( Token, mkPosToken )
+import Language.STLC.Syntax.Par   ( pProgram, myLexer )
+import Language.STLC.Syntax.Print ( Print, printTree )
+import Language.STLC.Syntax.Skel  ()
 
 type Err        = Either String
 type ParseFun a = [Token] -> Err a
@@ -49,7 +47,7 @@ run v p s =
       putStrLn "\nParse Successful!"
       showTree v tree
   where
-  ts = resolveLayout True $ myLexer s
+  ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]
 
 showTree :: (Show a, Print a) => Int -> a -> IO ()

@@ -13,7 +13,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Language.LambdaPi.Syntax.ErrM where
+module Language.STLC.Syntax.ErrM where
 
 import Prelude             (id, const, Either(..), String)
 

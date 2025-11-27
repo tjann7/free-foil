@@ -10,7 +10,7 @@
 
 -- | The abstract syntax of language Syntax.
 
-module Language.LambdaPi.Syntax.Abs where
+module Language.STLC.Syntax.Abs where
 
 import Prelude (String)
 import qualified Prelude as C
@@ -29,33 +29,45 @@ data Program' a = AProgram a [Command' a]
 
 type Command = Command' BNFC'Position
 data Command' a
-    = CommandCheck a (Term' a) (Term' a)
-    | CommandCompute a (Term' a) (Term' a)
+    = CommandCheck a (Expr' a) | CommandCompute a (Expr' a)
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
 
-type Term = Term' BNFC'Position
-data Term' a
-    = Var a VarIdent
-    | Pi a (Pattern' a) (Term' a) (ScopedTerm' a)
-    | Lam a (Pattern' a) (ScopedTerm' a)
-    | App a (Term' a) (Term' a)
-    | Product a (Term' a) (Term' a)
-    | Pair a (Term' a) (Term' a)
-    | First a (Term' a)
-    | Second a (Term' a)
-    | Universe a
+type Expr = Expr' BNFC'Position
+data Expr' a
+    = EVar a VarIdent
+    | EConstNat a NatIdent
+    | EConstTrue a TrueIdent
+    | EConstFalse a FalseIdent
+    | EAdd a (Expr' a) (Expr' a)
+    | ESub a (Expr' a) (Expr' a)
+    | EIsZero a (Expr' a)
+    | ELam a (Pattern' a) (ScopedExpr' a)
+    | EApp a (Expr' a) (Expr' a)
+    | EIf a (Expr' a) (Expr' a) (Expr' a)
+    | ELet a (Pattern' a) (Expr' a) (ScopedExpr' a)
+    | ETyped a (Expr' a) (Type' a)
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
 
-type ScopedTerm = ScopedTerm' BNFC'Position
-data ScopedTerm' a = AScopedTerm a (Term' a)
+type ScopedExpr = ScopedExpr' BNFC'Position
+data ScopedExpr' a = AScopedExpr a (Expr' a)
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
 
 type Pattern = Pattern' BNFC'Position
-data Pattern' a
-    = PatternWildcard a
-    | PatternVar a VarIdent
-    | PatternPair a (Pattern' a) (Pattern' a)
+data Pattern' a = PatternVar a VarIdent
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
+
+type Type = Type' BNFC'Position
+data Type' a = TFunc a (Type' a) (Type' a) | TNat a | TBool a
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
+
+newtype NatIdent = NatIdent String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic, Data.String.IsString)
+
+newtype TrueIdent = TrueIdent String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic, Data.String.IsString)
+
+newtype FalseIdent = FalseIdent String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic, Data.String.IsString)
 
 newtype VarIdent = VarIdent String
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic, Data.String.IsString)
@@ -81,28 +93,35 @@ instance HasPosition Program where
 
 instance HasPosition Command where
   hasPosition = \case
-    CommandCheck p _ _ -> p
-    CommandCompute p _ _ -> p
+    CommandCheck p _ -> p
+    CommandCompute p _ -> p
 
-instance HasPosition Term where
+instance HasPosition Expr where
   hasPosition = \case
-    Var p _ -> p
-    Pi p _ _ _ -> p
-    Lam p _ _ -> p
-    App p _ _ -> p
-    Product p _ _ -> p
-    Pair p _ _ -> p
-    First p _ -> p
-    Second p _ -> p
-    Universe p -> p
+    EVar p _ -> p
+    EConstNat p _ -> p
+    EConstTrue p _ -> p
+    EConstFalse p _ -> p
+    EAdd p _ _ -> p
+    ESub p _ _ -> p
+    EIsZero p _ -> p
+    ELam p _ _ -> p
+    EApp p _ _ -> p
+    EIf p _ _ _ -> p
+    ELet p _ _ _ -> p
+    ETyped p _ _ -> p
 
-instance HasPosition ScopedTerm where
+instance HasPosition ScopedExpr where
   hasPosition = \case
-    AScopedTerm p _ -> p
+    AScopedExpr p _ -> p
 
 instance HasPosition Pattern where
   hasPosition = \case
-    PatternWildcard p -> p
     PatternVar p _ -> p
-    PatternPair p _ _ -> p
+
+instance HasPosition Type where
+  hasPosition = \case
+    TFunc p _ _ -> p
+    TNat p -> p
+    TBool p -> p
 

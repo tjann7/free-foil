@@ -6,7 +6,7 @@
 
 -- | Pretty-printer for Language.
 
-module Language.LambdaPi.Syntax.Print where
+module Language.STLC.Syntax.Print where
 
 import Prelude
   ( ($), (.)
@@ -17,7 +17,7 @@ import Prelude
   , all, elem, foldr, id, map, null, replicate, shows, span
   )
 import Data.Char ( Char, isSpace )
-import qualified Language.LambdaPi.Syntax.Abs
+import qualified Language.STLC.Syntax.Abs
 
 -- | The top-level printing method.
 
@@ -134,39 +134,52 @@ instance Print Integer where
 instance Print Double where
   prt _ x = doc (shows x)
 
-instance Print Language.LambdaPi.Syntax.Abs.VarIdent where
-  prt _ (Language.LambdaPi.Syntax.Abs.VarIdent i) = doc $ showString i
-instance Print (Language.LambdaPi.Syntax.Abs.Program' a) where
+instance Print Language.STLC.Syntax.Abs.NatIdent where
+  prt _ (Language.STLC.Syntax.Abs.NatIdent i) = doc $ showString i
+instance Print Language.STLC.Syntax.Abs.TrueIdent where
+  prt _ (Language.STLC.Syntax.Abs.TrueIdent i) = doc $ showString i
+instance Print Language.STLC.Syntax.Abs.FalseIdent where
+  prt _ (Language.STLC.Syntax.Abs.FalseIdent i) = doc $ showString i
+instance Print Language.STLC.Syntax.Abs.VarIdent where
+  prt _ (Language.STLC.Syntax.Abs.VarIdent i) = doc $ showString i
+instance Print (Language.STLC.Syntax.Abs.Program' a) where
   prt i = \case
-    Language.LambdaPi.Syntax.Abs.AProgram _ commands -> prPrec i 0 (concatD [prt 0 commands])
+    Language.STLC.Syntax.Abs.AProgram _ commands -> prPrec i 0 (concatD [prt 0 commands])
 
-instance Print (Language.LambdaPi.Syntax.Abs.Command' a) where
+instance Print (Language.STLC.Syntax.Abs.Command' a) where
   prt i = \case
-    Language.LambdaPi.Syntax.Abs.CommandCheck _ term1 term2 -> prPrec i 0 (concatD [doc (showString "check"), prt 0 term1, doc (showString ":"), prt 0 term2])
-    Language.LambdaPi.Syntax.Abs.CommandCompute _ term1 term2 -> prPrec i 0 (concatD [doc (showString "compute"), prt 0 term1, doc (showString ":"), prt 0 term2])
+    Language.STLC.Syntax.Abs.CommandCheck _ expr -> prPrec i 0 (concatD [doc (showString "check"), prt 0 expr])
+    Language.STLC.Syntax.Abs.CommandCompute _ expr -> prPrec i 0 (concatD [doc (showString "compute"), prt 0 expr])
 
-instance Print [Language.LambdaPi.Syntax.Abs.Command' a] where
+instance Print [Language.STLC.Syntax.Abs.Command' a] where
   prt _ [] = concatD []
   prt _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
 
-instance Print (Language.LambdaPi.Syntax.Abs.Term' a) where
+instance Print (Language.STLC.Syntax.Abs.Expr' a) where
   prt i = \case
-    Language.LambdaPi.Syntax.Abs.Var _ varident -> prPrec i 2 (concatD [prt 0 varident])
-    Language.LambdaPi.Syntax.Abs.Pi _ pattern_ term scopedterm -> prPrec i 0 (concatD [doc (showString "\928"), doc (showString "("), prt 0 pattern_, doc (showString ":"), prt 0 term, doc (showString ")"), doc (showString "\8594"), prt 0 scopedterm])
-    Language.LambdaPi.Syntax.Abs.Lam _ pattern_ scopedterm -> prPrec i 0 (concatD [doc (showString "\955"), prt 0 pattern_, doc (showString "."), prt 0 scopedterm])
-    Language.LambdaPi.Syntax.Abs.App _ term1 term2 -> prPrec i 1 (concatD [prt 1 term1, prt 2 term2])
-    Language.LambdaPi.Syntax.Abs.Product _ term1 term2 -> prPrec i 0 (concatD [prt 1 term1, doc (showString "\215"), prt 1 term2])
-    Language.LambdaPi.Syntax.Abs.Pair _ term1 term2 -> prPrec i 0 (concatD [doc (showString "("), prt 0 term1, doc (showString ","), prt 0 term2, doc (showString ")")])
-    Language.LambdaPi.Syntax.Abs.First _ term -> prPrec i 0 (concatD [doc (showString "\960\8321"), doc (showString "("), prt 0 term, doc (showString ")")])
-    Language.LambdaPi.Syntax.Abs.Second _ term -> prPrec i 0 (concatD [doc (showString "\960\8322"), doc (showString "("), prt 0 term, doc (showString ")")])
-    Language.LambdaPi.Syntax.Abs.Universe _ -> prPrec i 0 (concatD [doc (showString "\120140")])
+    Language.STLC.Syntax.Abs.EVar _ varident -> prPrec i 3 (concatD [prt 0 varident])
+    Language.STLC.Syntax.Abs.EConstNat _ natident -> prPrec i 3 (concatD [prt 0 natident])
+    Language.STLC.Syntax.Abs.EConstTrue _ trueident -> prPrec i 3 (concatD [prt 0 trueident])
+    Language.STLC.Syntax.Abs.EConstFalse _ falseident -> prPrec i 3 (concatD [prt 0 falseident])
+    Language.STLC.Syntax.Abs.EAdd _ expr1 expr2 -> prPrec i 2 (concatD [prt 2 expr1, doc (showString "+"), prt 2 expr2])
+    Language.STLC.Syntax.Abs.ESub _ expr1 expr2 -> prPrec i 2 (concatD [prt 2 expr1, doc (showString "-"), prt 2 expr2])
+    Language.STLC.Syntax.Abs.EIsZero _ expr -> prPrec i 2 (concatD [doc (showString "iszero"), doc (showString "("), prt 0 expr, doc (showString ")")])
+    Language.STLC.Syntax.Abs.ELam _ pattern_ scopedexpr -> prPrec i 1 (concatD [doc (showString "\955"), prt 0 pattern_, doc (showString "."), prt 0 scopedexpr])
+    Language.STLC.Syntax.Abs.EApp _ expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, prt 0 expr2])
+    Language.STLC.Syntax.Abs.EIf _ expr1 expr2 expr3 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr1, doc (showString "then"), prt 0 expr2, doc (showString "else"), prt 0 expr3])
+    Language.STLC.Syntax.Abs.ELet _ pattern_ expr scopedexpr -> prPrec i 0 (concatD [doc (showString "let"), prt 0 pattern_, doc (showString "="), prt 0 expr, doc (showString "in"), prt 0 scopedexpr])
+    Language.STLC.Syntax.Abs.ETyped _ expr type_ -> prPrec i 0 (concatD [prt 0 expr, doc (showString ":"), prt 0 type_])
 
-instance Print (Language.LambdaPi.Syntax.Abs.ScopedTerm' a) where
+instance Print (Language.STLC.Syntax.Abs.ScopedExpr' a) where
   prt i = \case
-    Language.LambdaPi.Syntax.Abs.AScopedTerm _ term -> prPrec i 0 (concatD [prt 0 term])
+    Language.STLC.Syntax.Abs.AScopedExpr _ expr -> prPrec i 0 (concatD [prt 0 expr])
 
-instance Print (Language.LambdaPi.Syntax.Abs.Pattern' a) where
+instance Print (Language.STLC.Syntax.Abs.Pattern' a) where
   prt i = \case
-    Language.LambdaPi.Syntax.Abs.PatternWildcard _ -> prPrec i 0 (concatD [doc (showString "_")])
-    Language.LambdaPi.Syntax.Abs.PatternVar _ varident -> prPrec i 0 (concatD [prt 0 varident])
-    Language.LambdaPi.Syntax.Abs.PatternPair _ pattern_1 pattern_2 -> prPrec i 0 (concatD [doc (showString "("), prt 0 pattern_1, doc (showString ","), prt 0 pattern_2, doc (showString ")")])
+    Language.STLC.Syntax.Abs.PatternVar _ varident -> prPrec i 0 (concatD [prt 0 varident])
+
+instance Print (Language.STLC.Syntax.Abs.Type' a) where
+  prt i = \case
+    Language.STLC.Syntax.Abs.TFunc _ type_1 type_2 -> prPrec i 0 (concatD [prt 1 type_1, doc (showString "->"), prt 0 type_2])
+    Language.STLC.Syntax.Abs.TNat _ -> prPrec i 1 (concatD [doc (showString "Nat")])
+    Language.STLC.Syntax.Abs.TBool _ -> prPrec i 1 (concatD [doc (showString "Bool")])
