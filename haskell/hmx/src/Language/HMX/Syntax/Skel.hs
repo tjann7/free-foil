@@ -19,25 +19,56 @@ transVarIdent :: Language.HMX.Syntax.Abs.VarIdent -> Result
 transVarIdent x = case x of
   Language.HMX.Syntax.Abs.VarIdent string -> failure x
 
-transProgram :: Show a => Language.HMX.Syntax.Abs.Program' a -> Result
+transUVarIdent :: Language.HMX.Syntax.Abs.UVarIdent -> Result
+transUVarIdent x = case x of
+  Language.HMX.Syntax.Abs.UVarIdent string -> failure x
+
+transProgram :: Language.HMX.Syntax.Abs.Program -> Result
 transProgram x = case x of
-  Language.HMX.Syntax.Abs.AProgram _ commands -> failure x
+  Language.HMX.Syntax.Abs.Program commands -> failure x
 
-transCommand :: Show a => Language.HMX.Syntax.Abs.Command' a -> Result
+transCommand :: Language.HMX.Syntax.Abs.Command -> Result
 transCommand x = case x of
-  Language.HMX.Syntax.Abs.CommandCheck _ term1 term2 -> failure x
-  Language.HMX.Syntax.Abs.CommandCompute _ term1 term2 -> failure x
+  Language.HMX.Syntax.Abs.CommandCheck expr -> failure x
+  Language.HMX.Syntax.Abs.CommandCompute expr -> failure x
 
-transTerm :: Show a => Language.HMX.Syntax.Abs.Term' a -> Result
-transTerm x = case x of
-  Language.HMX.Syntax.Abs.Var _ varident -> failure x
-  Language.HMX.Syntax.Abs.Lam _ pattern_ scopedterm -> failure x
-  Language.HMX.Syntax.Abs.App _ term1 term2 -> failure x
+transExpr :: Language.HMX.Syntax.Abs.Expr -> Result
+transExpr x = case x of
+  Language.HMX.Syntax.Abs.EVar varident -> failure x
+  Language.HMX.Syntax.Abs.EConstNat integer -> failure x
+  Language.HMX.Syntax.Abs.EConstTrue -> failure x
+  Language.HMX.Syntax.Abs.EConstFalse -> failure x
+  Language.HMX.Syntax.Abs.EAdd expr1 expr2 -> failure x
+  Language.HMX.Syntax.Abs.ESub expr1 expr2 -> failure x
+  Language.HMX.Syntax.Abs.EIsZero expr -> failure x
+  Language.HMX.Syntax.Abs.ELam pattern_ scopedexpr -> failure x
+  Language.HMX.Syntax.Abs.EApp expr1 expr2 -> failure x
+  Language.HMX.Syntax.Abs.EIf expr1 expr2 expr3 -> failure x
+  Language.HMX.Syntax.Abs.ELet pattern_ expr scopedexpr -> failure x
+  Language.HMX.Syntax.Abs.EFor pattern_ expr1 expr2 scopedexpr -> failure x
+  Language.HMX.Syntax.Abs.ETyped expr type_ -> failure x
 
-transScopedTerm :: Show a => Language.HMX.Syntax.Abs.ScopedTerm' a -> Result
-transScopedTerm x = case x of
-  Language.HMX.Syntax.Abs.AScopedTerm _ term -> failure x
+transType :: Language.HMX.Syntax.Abs.Type -> Result
+transType x = case x of
+  Language.HMX.Syntax.Abs.TForAll typepattern scopedtype -> failure x
+  Language.HMX.Syntax.Abs.TFunc type_1 type_2 -> failure x
+  Language.HMX.Syntax.Abs.TNat -> failure x
+  Language.HMX.Syntax.Abs.TBool -> failure x
+  Language.HMX.Syntax.Abs.TVar varident -> failure x
+  Language.HMX.Syntax.Abs.TUVar uvarident -> failure x
 
-transPattern :: Show a => Language.HMX.Syntax.Abs.Pattern' a -> Result
+transScopedExpr :: Language.HMX.Syntax.Abs.ScopedExpr -> Result
+transScopedExpr x = case x of
+  Language.HMX.Syntax.Abs.ScopedExpr expr -> failure x
+
+transScopedType :: Language.HMX.Syntax.Abs.ScopedType -> Result
+transScopedType x = case x of
+  Language.HMX.Syntax.Abs.ScopedType type_ -> failure x
+
+transPattern :: Language.HMX.Syntax.Abs.Pattern -> Result
 transPattern x = case x of
-  Language.HMX.Syntax.Abs.PatternVar _ varident -> failure x
+  Language.HMX.Syntax.Abs.PatternVar varident -> failure x
+
+transTypePattern :: Language.HMX.Syntax.Abs.TypePattern -> Result
+transTypePattern x = case x of
+  Language.HMX.Syntax.Abs.PatternType varident -> failure x

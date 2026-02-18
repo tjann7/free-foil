@@ -1,0 +1,3 @@
+let x0 = /z.z in
+    let x1 = /z.z x0 x0 in
+        x1

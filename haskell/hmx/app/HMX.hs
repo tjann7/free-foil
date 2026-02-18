@@ -1,6 +1,6 @@
 module Main where
 
-import qualified Language.HMX.Impl.FreeFoil as FreeFoil
+import qualified Language.HMX.Impl.Interpret as Interpret
 
 main :: IO ()
-main = FreeFoil.defaultMain
+main = Interpret.defaultMain

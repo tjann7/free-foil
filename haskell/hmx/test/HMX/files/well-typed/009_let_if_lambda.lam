@@ -1,0 +1,1 @@
+let f = if iszero (5) then (/x. x) else (/x. x + 1) in f 5

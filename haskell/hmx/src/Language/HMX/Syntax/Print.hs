@@ -136,29 +136,58 @@ instance Print Double where
 
 instance Print Language.HMX.Syntax.Abs.VarIdent where
   prt _ (Language.HMX.Syntax.Abs.VarIdent i) = doc $ showString i
-instance Print (Language.HMX.Syntax.Abs.Program' a) where
+instance Print Language.HMX.Syntax.Abs.UVarIdent where
+  prt _ (Language.HMX.Syntax.Abs.UVarIdent i) = doc $ showString i
+instance Print Language.HMX.Syntax.Abs.Program where
   prt i = \case
-    Language.HMX.Syntax.Abs.AProgram _ commands -> prPrec i 0 (concatD [prt 0 commands])
+    Language.HMX.Syntax.Abs.Program commands -> prPrec i 0 (concatD [prt 0 commands])
 
-instance Print (Language.HMX.Syntax.Abs.Command' a) where
+instance Print Language.HMX.Syntax.Abs.Command where
   prt i = \case
-    Language.HMX.Syntax.Abs.CommandCheck _ term1 term2 -> prPrec i 0 (concatD [doc (showString "check"), prt 0 term1, doc (showString ":"), prt 0 term2])
-    Language.HMX.Syntax.Abs.CommandCompute _ term1 term2 -> prPrec i 0 (concatD [doc (showString "compute"), prt 0 term1, doc (showString ":"), prt 0 term2])
+    Language.HMX.Syntax.Abs.CommandCheck expr -> prPrec i 0 (concatD [doc (showString "check"), prt 0 expr])
+    Language.HMX.Syntax.Abs.CommandCompute expr -> prPrec i 0 (concatD [doc (showString "compute"), prt 0 expr])
 
-instance Print [Language.HMX.Syntax.Abs.Command' a] where
+instance Print [Language.HMX.Syntax.Abs.Command] where
   prt _ [] = concatD []
   prt _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
 
-instance Print (Language.HMX.Syntax.Abs.Term' a) where
+instance Print Language.HMX.Syntax.Abs.Expr where
   prt i = \case
-    Language.HMX.Syntax.Abs.Var _ varident -> prPrec i 2 (concatD [prt 0 varident])
-    Language.HMX.Syntax.Abs.Lam _ pattern_ scopedterm -> prPrec i 0 (concatD [doc (showString "\955"), prt 0 pattern_, doc (showString "."), prt 0 scopedterm])
-    Language.HMX.Syntax.Abs.App _ term1 term2 -> prPrec i 1 (concatD [prt 1 term1, prt 2 term2])
+    Language.HMX.Syntax.Abs.EVar varident -> prPrec i 3 (concatD [prt 0 varident])
+    Language.HMX.Syntax.Abs.EConstNat n -> prPrec i 3 (concatD [prt 0 n])
+    Language.HMX.Syntax.Abs.EConstTrue -> prPrec i 3 (concatD [doc (showString "true")])
+    Language.HMX.Syntax.Abs.EConstFalse -> prPrec i 3 (concatD [doc (showString "false")])
+    Language.HMX.Syntax.Abs.EAdd expr1 expr2 -> prPrec i 2 (concatD [prt 2 expr1, doc (showString "+"), prt 3 expr2])
+    Language.HMX.Syntax.Abs.ESub expr1 expr2 -> prPrec i 2 (concatD [prt 2 expr1, doc (showString "-"), prt 3 expr2])
+    Language.HMX.Syntax.Abs.EIsZero expr -> prPrec i 2 (concatD [doc (showString "iszero"), doc (showString "("), prt 0 expr, doc (showString ")")])
+    Language.HMX.Syntax.Abs.ELam pattern_ scopedexpr -> prPrec i 1 (concatD [doc (showString "\\"), prt 0 pattern_, doc (showString "."), prt 0 scopedexpr])
+    Language.HMX.Syntax.Abs.EApp expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, prt 2 expr2])
+    Language.HMX.Syntax.Abs.EIf expr1 expr2 expr3 -> prPrec i 1 (concatD [doc (showString "if"), prt 1 expr1, doc (showString "then"), prt 1 expr2, doc (showString "else"), prt 1 expr3])
+    Language.HMX.Syntax.Abs.ELet pattern_ expr scopedexpr -> prPrec i 1 (concatD [doc (showString "let"), prt 0 pattern_, doc (showString "="), prt 1 expr, doc (showString "in"), prt 0 scopedexpr])
+    Language.HMX.Syntax.Abs.EFor pattern_ expr1 expr2 scopedexpr -> prPrec i 1 (concatD [doc (showString "for"), prt 0 pattern_, doc (showString "in"), doc (showString "["), prt 1 expr1, doc (showString ".."), prt 1 expr2, doc (showString "]"), doc (showString "do"), prt 0 scopedexpr])
+    Language.HMX.Syntax.Abs.ETyped expr type_ -> prPrec i 0 (concatD [prt 1 expr, doc (showString ":"), prt 0 type_])
 
-instance Print (Language.HMX.Syntax.Abs.ScopedTerm' a) where
+instance Print Language.HMX.Syntax.Abs.Type where
   prt i = \case
-    Language.HMX.Syntax.Abs.AScopedTerm _ term -> prPrec i 0 (concatD [prt 0 term])
+    Language.HMX.Syntax.Abs.TForAll typepattern scopedtype -> prPrec i 0 (concatD [doc (showString "forall"), prt 0 typepattern, doc (showString "."), prt 0 scopedtype])
+    Language.HMX.Syntax.Abs.TFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "->"), prt 1 type_2])
+    Language.HMX.Syntax.Abs.TNat -> prPrec i 2 (concatD [doc (showString "Nat")])
+    Language.HMX.Syntax.Abs.TBool -> prPrec i 2 (concatD [doc (showString "Bool")])
+    Language.HMX.Syntax.Abs.TVar varident -> prPrec i 2 (concatD [prt 0 varident])
+    Language.HMX.Syntax.Abs.TUVar uvarident -> prPrec i 2 (concatD [prt 0 uvarident])
 
-instance Print (Language.HMX.Syntax.Abs.Pattern' a) where
+instance Print Language.HMX.Syntax.Abs.ScopedExpr where
   prt i = \case
-    Language.HMX.Syntax.Abs.PatternVar _ varident -> prPrec i 0 (concatD [prt 0 varident])
+    Language.HMX.Syntax.Abs.ScopedExpr expr -> prPrec i 0 (concatD [prt 0 expr])
+
+instance Print Language.HMX.Syntax.Abs.ScopedType where
+  prt i = \case
+    Language.HMX.Syntax.Abs.ScopedType type_ -> prPrec i 0 (concatD [prt 1 type_])
+
+instance Print Language.HMX.Syntax.Abs.Pattern where
+  prt i = \case
+    Language.HMX.Syntax.Abs.PatternVar varident -> prPrec i 0 (concatD [prt 0 varident])
+
+instance Print Language.HMX.Syntax.Abs.TypePattern where
+  prt i = \case
+    Language.HMX.Syntax.Abs.PatternType varident -> prPrec i 0 (concatD [prt 0 varident])

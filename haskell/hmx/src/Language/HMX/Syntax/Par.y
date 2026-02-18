@@ -11,11 +11,17 @@ module Language.HMX.Syntax.Par
   , pProgram
   , pCommand
   , pListCommand
-  , pTerm2
-  , pTerm
-  , pTerm1
-  , pScopedTerm
+  , pExpr3
+  , pExpr2
+  , pExpr1
+  , pExpr
+  , pType
+  , pType1
+  , pType2
+  , pScopedExpr
+  , pScopedType
   , pPattern
+  , pTypePattern
   ) where
 
 import Prelude
@@ -25,69 +31,137 @@ import Language.HMX.Syntax.Lex
 
 }
 
-%name pProgram_internal Program
-%name pCommand_internal Command
-%name pListCommand_internal ListCommand
-%name pTerm2_internal Term2
-%name pTerm_internal Term
-%name pTerm1_internal Term1
-%name pScopedTerm_internal ScopedTerm
-%name pPattern_internal Pattern
+%name pProgram Program
+%name pCommand Command
+%name pListCommand ListCommand
+%name pExpr3 Expr3
+%name pExpr2 Expr2
+%name pExpr1 Expr1
+%name pExpr Expr
+%name pType Type
+%name pType1 Type1
+%name pType2 Type2
+%name pScopedExpr ScopedExpr
+%name pScopedType ScopedType
+%name pPattern Pattern
+%name pTypePattern TypePattern
 -- no lexer declaration
 %monad { Err } { (>>=) } { return }
 %tokentype {Token}
 %token
-  '('        { PT _ (TS _ 1)       }
-  ')'        { PT _ (TS _ 2)       }
-  '.'        { PT _ (TS _ 3)       }
-  ':'        { PT _ (TS _ 4)       }
-  ';'        { PT _ (TS _ 5)       }
-  'check'    { PT _ (TS _ 6)       }
-  'compute'  { PT _ (TS _ 7)       }
-  'λ'        { PT _ (TS _ 8)       }
-  L_VarIdent { PT _ (T_VarIdent _) }
+  '('         { PT _ (TS _ 1)         }
+  ')'         { PT _ (TS _ 2)         }
+  '+'         { PT _ (TS _ 3)         }
+  '-'         { PT _ (TS _ 4)         }
+  '->'        { PT _ (TS _ 5)         }
+  '.'         { PT _ (TS _ 6)         }
+  '..'        { PT _ (TS _ 7)         }
+  ':'         { PT _ (TS _ 8)         }
+  ';'         { PT _ (TS _ 9)         }
+  '='         { PT _ (TS _ 10)        }
+  'Bool'      { PT _ (TS _ 11)        }
+  'Nat'       { PT _ (TS _ 12)        }
+  '['         { PT _ (TS _ 13)        }
+  '\\'        { PT _ (TS _ 14)        }
+  ']'         { PT _ (TS _ 15)        }
+  'check'     { PT _ (TS _ 16)        }
+  'compute'   { PT _ (TS _ 17)        }
+  'do'        { PT _ (TS _ 18)        }
+  'else'      { PT _ (TS _ 19)        }
+  'false'     { PT _ (TS _ 20)        }
+  'for'       { PT _ (TS _ 21)        }
+  'forall'    { PT _ (TS _ 22)        }
+  'if'        { PT _ (TS _ 23)        }
+  'in'        { PT _ (TS _ 24)        }
+  'iszero'    { PT _ (TS _ 25)        }
+  'let'       { PT _ (TS _ 26)        }
+  'then'      { PT _ (TS _ 27)        }
+  'true'      { PT _ (TS _ 28)        }
+  L_integ     { PT _ (TI $$)          }
+  L_VarIdent  { PT _ (T_VarIdent $$)  }
+  L_UVarIdent { PT _ (T_UVarIdent $$) }
 
 %%
 
-VarIdent :: { (Language.HMX.Syntax.Abs.BNFC'Position, Language.HMX.Syntax.Abs.VarIdent) }
-VarIdent  : L_VarIdent { (uncurry Language.HMX.Syntax.Abs.BNFC'Position (tokenLineCol $1), Language.HMX.Syntax.Abs.VarIdent (tokenText $1)) }
+Integer :: { Integer }
+Integer  : L_integ  { (read $1) :: Integer }
 
-Program :: { (Language.HMX.Syntax.Abs.BNFC'Position, Language.HMX.Syntax.Abs.Program) }
-Program
-  : ListCommand { (fst $1, Language.HMX.Syntax.Abs.AProgram (fst $1) (snd $1)) }
+VarIdent :: { Language.HMX.Syntax.Abs.VarIdent }
+VarIdent  : L_VarIdent { Language.HMX.Syntax.Abs.VarIdent $1 }
 
-Command :: { (Language.HMX.Syntax.Abs.BNFC'Position, Language.HMX.Syntax.Abs.Command) }
+UVarIdent :: { Language.HMX.Syntax.Abs.UVarIdent }
+UVarIdent  : L_UVarIdent { Language.HMX.Syntax.Abs.UVarIdent $1 }
+
+Program :: { Language.HMX.Syntax.Abs.Program }
+Program : ListCommand { Language.HMX.Syntax.Abs.Program $1 }
+
+Command :: { Language.HMX.Syntax.Abs.Command }
 Command
-  : 'check' Term ':' Term { (uncurry Language.HMX.Syntax.Abs.BNFC'Position (tokenLineCol $1), Language.HMX.Syntax.Abs.CommandCheck (uncurry Language.HMX.Syntax.Abs.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4)) }
-  | 'compute' Term ':' Term { (uncurry Language.HMX.Syntax.Abs.BNFC'Position (tokenLineCol $1), Language.HMX.Syntax.Abs.CommandCompute (uncurry Language.HMX.Syntax.Abs.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4)) }
+  : 'check' Expr { Language.HMX.Syntax.Abs.CommandCheck $2 }
+  | 'compute' Expr { Language.HMX.Syntax.Abs.CommandCompute $2 }
 
-ListCommand :: { (Language.HMX.Syntax.Abs.BNFC'Position, [Language.HMX.Syntax.Abs.Command]) }
+ListCommand :: { [Language.HMX.Syntax.Abs.Command] }
 ListCommand
-  : {- empty -} { (Language.HMX.Syntax.Abs.BNFC'NoPosition, []) }
-  | Command ';' ListCommand { (fst $1, (:) (snd $1) (snd $3)) }
+  : {- empty -} { [] } | Command ';' ListCommand { (:) $1 $3 }
 
-Term2 :: { (Language.HMX.Syntax.Abs.BNFC'Position, Language.HMX.Syntax.Abs.Term) }
-Term2
-  : VarIdent { (fst $1, Language.HMX.Syntax.Abs.Var (fst $1) (snd $1)) }
-  | '(' Term ')' { (uncurry Language.HMX.Syntax.Abs.BNFC'Position (tokenLineCol $1), (snd $2)) }
+Expr3 :: { Language.HMX.Syntax.Abs.Expr }
+Expr3
+  : VarIdent { Language.HMX.Syntax.Abs.EVar $1 }
+  | Integer { Language.HMX.Syntax.Abs.EConstNat $1 }
+  | 'true' { Language.HMX.Syntax.Abs.EConstTrue }
+  | 'false' { Language.HMX.Syntax.Abs.EConstFalse }
+  | '(' Expr ')' { $2 }
 
-Term :: { (Language.HMX.Syntax.Abs.BNFC'Position, Language.HMX.Syntax.Abs.Term) }
-Term
-  : 'λ' Pattern '.' ScopedTerm { (uncurry Language.HMX.Syntax.Abs.BNFC'Position (tokenLineCol $1), Language.HMX.Syntax.Abs.Lam (uncurry Language.HMX.Syntax.Abs.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4)) }
-  | Term1 { (fst $1, (snd $1)) }
+Expr2 :: { Language.HMX.Syntax.Abs.Expr }
+Expr2
+  : Expr2 '+' Expr3 { Language.HMX.Syntax.Abs.EAdd $1 $3 }
+  | Expr2 '-' Expr3 { Language.HMX.Syntax.Abs.ESub $1 $3 }
+  | 'iszero' '(' Expr ')' { Language.HMX.Syntax.Abs.EIsZero $3 }
+  | Expr3 { $1 }
 
-Term1 :: { (Language.HMX.Syntax.Abs.BNFC'Position, Language.HMX.Syntax.Abs.Term) }
-Term1
-  : Term1 Term2 { (fst $1, Language.HMX.Syntax.Abs.App (fst $1) (snd $1) (snd $2)) }
-  | Term2 { (fst $1, (snd $1)) }
+Expr1 :: { Language.HMX.Syntax.Abs.Expr }
+Expr1
+  : '\\' Pattern '.' ScopedExpr { Language.HMX.Syntax.Abs.ELam $2 $4 }
+  | Expr1 Expr2 { Language.HMX.Syntax.Abs.EApp $1 $2 }
+  | 'if' Expr1 'then' Expr1 'else' Expr1 { Language.HMX.Syntax.Abs.EIf $2 $4 $6 }
+  | 'let' Pattern '=' Expr1 'in' ScopedExpr { Language.HMX.Syntax.Abs.ELet $2 $4 $6 }
+  | 'for' Pattern 'in' '[' Expr1 '..' Expr1 ']' 'do' ScopedExpr { Language.HMX.Syntax.Abs.EFor $2 $5 $7 $10 }
+  | Expr2 { $1 }
 
-ScopedTerm :: { (Language.HMX.Syntax.Abs.BNFC'Position, Language.HMX.Syntax.Abs.ScopedTerm) }
-ScopedTerm
-  : Term { (fst $1, Language.HMX.Syntax.Abs.AScopedTerm (fst $1) (snd $1)) }
+Expr :: { Language.HMX.Syntax.Abs.Expr }
+Expr
+  : Expr1 ':' Type { Language.HMX.Syntax.Abs.ETyped $1 $3 }
+  | Expr1 { $1 }
 
-Pattern :: { (Language.HMX.Syntax.Abs.BNFC'Position, Language.HMX.Syntax.Abs.Pattern) }
-Pattern
-  : VarIdent { (fst $1, Language.HMX.Syntax.Abs.PatternVar (fst $1) (snd $1)) }
+Type :: { Language.HMX.Syntax.Abs.Type }
+Type
+  : 'forall' TypePattern '.' ScopedType { Language.HMX.Syntax.Abs.TForAll $2 $4 }
+  | Type1 { $1 }
+
+Type1 :: { Language.HMX.Syntax.Abs.Type }
+Type1
+  : Type2 '->' Type1 { Language.HMX.Syntax.Abs.TFunc $1 $3 }
+  | Type2 { $1 }
+
+Type2 :: { Language.HMX.Syntax.Abs.Type }
+Type2
+  : 'Nat' { Language.HMX.Syntax.Abs.TNat }
+  | 'Bool' { Language.HMX.Syntax.Abs.TBool }
+  | VarIdent { Language.HMX.Syntax.Abs.TVar $1 }
+  | UVarIdent { Language.HMX.Syntax.Abs.TUVar $1 }
+  | '(' Type ')' { $2 }
+
+ScopedExpr :: { Language.HMX.Syntax.Abs.ScopedExpr }
+ScopedExpr : Expr { Language.HMX.Syntax.Abs.ScopedExpr $1 }
+
+ScopedType :: { Language.HMX.Syntax.Abs.ScopedType }
+ScopedType : Type1 { Language.HMX.Syntax.Abs.ScopedType $1 }
+
+Pattern :: { Language.HMX.Syntax.Abs.Pattern }
+Pattern : VarIdent { Language.HMX.Syntax.Abs.PatternVar $1 }
+
+TypePattern :: { Language.HMX.Syntax.Abs.TypePattern }
+TypePattern : VarIdent { Language.HMX.Syntax.Abs.PatternType $1 }
 
 {
 
@@ -104,30 +178,5 @@ happyError ts = Left $
 myLexer :: String -> [Token]
 myLexer = tokens
 
--- Entrypoints
-
-pProgram :: [Token] -> Err Language.HMX.Syntax.Abs.Program
-pProgram = fmap snd . pProgram_internal
-
-pCommand :: [Token] -> Err Language.HMX.Syntax.Abs.Command
-pCommand = fmap snd . pCommand_internal
-
-pListCommand :: [Token] -> Err [Language.HMX.Syntax.Abs.Command]
-pListCommand = fmap snd . pListCommand_internal
-
-pTerm2 :: [Token] -> Err Language.HMX.Syntax.Abs.Term
-pTerm2 = fmap snd . pTerm2_internal
-
-pTerm :: [Token] -> Err Language.HMX.Syntax.Abs.Term
-pTerm = fmap snd . pTerm_internal
-
-pTerm1 :: [Token] -> Err Language.HMX.Syntax.Abs.Term
-pTerm1 = fmap snd . pTerm1_internal
-
-pScopedTerm :: [Token] -> Err Language.HMX.Syntax.Abs.ScopedTerm
-pScopedTerm = fmap snd . pScopedTerm_internal
-
-pPattern :: [Token] -> Err Language.HMX.Syntax.Abs.Pattern
-pPattern = fmap snd . pPattern_internal
 }
 
