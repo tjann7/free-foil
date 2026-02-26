@@ -35,9 +35,12 @@ custom-setup
 
 library
   exposed-modules:
-      Language.HMX.Impl.FreeFoil
+      Language.HMX.Impl.Constraint
+      Language.HMX.Impl.Eval
+      Language.HMX.Impl.Interpret
+      Language.HMX.Impl.Syntax
+      Language.HMX.Impl.Typecheck
       Language.HMX.Syntax.Abs
-      Language.HMX.Syntax.Layout
       Language.HMX.Syntax.Lex
       Language.HMX.Syntax.Par
       Language.HMX.Syntax.Print
@@ -118,6 +121,7 @@ test-suite spec
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      HMX.TypecheckTest
       Paths_hmx
   hs-source-dirs:
       test
