@@ -1,0 +1,5 @@
+let twice = (/t. (/x. (t (t x)))) in
+  let add2 = (/x. x + 2) in
+    let bool2int = (/b. if b then 1 else 0) in
+      let not = (/b. if b then false else true) in
+        (twice add2) (bool2int ((twice not) true))

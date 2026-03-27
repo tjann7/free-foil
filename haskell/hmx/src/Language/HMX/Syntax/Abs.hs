@@ -2,90 +2,65 @@
 
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveTraversable #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE PatternSynonyms #-}
 
 -- | The abstract syntax of language Syntax.
 
 module Language.HMX.Syntax.Abs where
 
-import Prelude (String)
-import qualified Prelude as C
-  ( Eq, Ord, Show, Read
-  , Functor, Foldable, Traversable
-  , Int, Maybe(..)
-  )
+import Prelude (Integer, String)
+import qualified Prelude as C (Eq, Ord, Show, Read)
 import qualified Data.String
 
 import qualified Data.Data    as C (Data)
 import qualified GHC.Generics as C (Generic)
 
-type Program = Program' BNFC'Position
-data Program' a = AProgram a [Command' a]
-  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
+data Program = Program [Command]
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic)
 
-type Command = Command' BNFC'Position
-data Command' a
-    = CommandCheck a (Term' a) (Term' a)
-    | CommandCompute a (Term' a) (Term' a)
-  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
+data Command = CommandCheck Expr | CommandCompute Expr
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic)
 
-type Term = Term' BNFC'Position
-data Term' a
-    = Var a VarIdent
-    | Lam a (Pattern' a) (ScopedTerm' a)
-    | App a (Term' a) (Term' a)
-  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
+data Expr
+    = EVar VarIdent
+    | EConstNat Integer
+    | EConstTrue
+    | EConstFalse
+    | EAdd Expr Expr
+    | ESub Expr Expr
+    | EIsZero Expr
+    | ELam Pattern ScopedExpr
+    | EApp Expr Expr
+    | EIf Expr Expr Expr
+    | ELet Pattern Expr ScopedExpr
+    | EFor Pattern Expr Expr ScopedExpr
+    | ETyped Expr Type
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic)
 
-type ScopedTerm = ScopedTerm' BNFC'Position
-data ScopedTerm' a = AScopedTerm a (Term' a)
-  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
+data Type
+    = TForAll TypePattern ScopedType
+    | TFunc Type Type
+    | TNat
+    | TBool
+    | TVar VarIdent
+    | TUVar UVarIdent
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic)
 
-type Pattern = Pattern' BNFC'Position
-data Pattern' a = PatternVar a VarIdent
-  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable, C.Data, C.Generic)
+data ScopedExpr = ScopedExpr Expr
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic)
+
+data ScopedType = ScopedType Type
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic)
+
+data Pattern = PatternVar VarIdent
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic)
+
+data TypePattern = PatternType VarIdent
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic)
 
 newtype VarIdent = VarIdent String
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic, Data.String.IsString)
 
--- | Start position (line, column) of something.
-
-type BNFC'Position = C.Maybe (C.Int, C.Int)
-
-pattern BNFC'NoPosition :: BNFC'Position
-pattern BNFC'NoPosition = C.Nothing
-
-pattern BNFC'Position :: C.Int -> C.Int -> BNFC'Position
-pattern BNFC'Position line col = C.Just (line, col)
-
--- | Get the start position of something.
-
-class HasPosition a where
-  hasPosition :: a -> BNFC'Position
-
-instance HasPosition Program where
-  hasPosition = \case
-    AProgram p _ -> p
-
-instance HasPosition Command where
-  hasPosition = \case
-    CommandCheck p _ _ -> p
-    CommandCompute p _ _ -> p
-
-instance HasPosition Term where
-  hasPosition = \case
-    Var p _ -> p
-    Lam p _ _ -> p
-    App p _ _ -> p
-
-instance HasPosition ScopedTerm where
-  hasPosition = \case
-    AScopedTerm p _ -> p
-
-instance HasPosition Pattern where
-  hasPosition = \case
-    PatternVar p _ -> p
+newtype UVarIdent = UVarIdent String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Data, C.Generic, Data.String.IsString)
 

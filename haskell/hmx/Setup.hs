@@ -35,7 +35,7 @@ main =
                 [ "set -ex" ] <>
                 [ "chcp.com" | isWindows ] <>
                 [ "chcp.com 65001" | isWindows ] <>
-                [ "bnfc --haskell -d -p Language.HMX --functor --generic -o src/ grammar/HMX/Syntax.cf"
+                [ "bnfc --haskell -d -p Language.HMX --generic -o src/ grammar/HMX/Syntax.cf" -- functor parameter removed
                 , "cd src/Language/HMX/Syntax"
                 , "alex Lex.x"
                 , "happy Par.y"

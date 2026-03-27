@@ -1,10 +1,10 @@
 name: hmx
 version: 0.2.0
-github: "fizruk/free-foil"
+github: "tjann7/free-foil"
 license: BSD3
-author: "Nikolai Kudasov"
-maintainer: "nickolay.kudasov@gmail.com"
-copyright: "2023–2024 Nikolai Kudasov, Renata Shakirova, Egor Shalagin, Karina Tyulebaeva"
+author: "Timur Suleymanov"
+maintainer: "tsuleymanov32@gmail.com"
+copyright: "2025-2026 Timur Suleymanov"
 
 extra-source-files:
   - README.md
@@ -17,7 +17,7 @@ category: Language
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description: Please see the README on GitHub at <https://github.com/fizruk/free-foil#readme>
+description: Please see the README on GitHub at <https://github.com/tjann7/free-foil#readme>
 
 custom-setup:
   dependencies:

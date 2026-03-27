@@ -1,19 +1,19 @@
 cabal-version: 1.24
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
 name:           hmx
 version:        0.2.0
 synopsis:       λΠ-calculus implemented in a few different ways.
-description:    Please see the README on GitHub at <https://github.com/fizruk/free-foil#readme>
+description:    Please see the README on GitHub at <https://github.com/tjann7/free-foil#readme>
 category:       Language
-homepage:       https://github.com/fizruk/free-foil#readme
-bug-reports:    https://github.com/fizruk/free-foil/issues
-author:         Nikolai Kudasov
-maintainer:     nickolay.kudasov@gmail.com
-copyright:      2023–2024 Nikolai Kudasov, Renata Shakirova, Egor Shalagin, Karina Tyulebaeva
+homepage:       https://github.com/tjann7/free-foil#readme
+bug-reports:    https://github.com/tjann7/free-foil/issues
+author:         Timur Suleymanov
+maintainer:     tsuleymanov32@gmail.com
+copyright:      2025-2026 Timur Suleymanov
 license:        BSD3
 license-file:   LICENSE
 build-type:     Custom
@@ -24,7 +24,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/fizruk/free-foil
+  location: https://github.com/tjann7/free-foil
 
 custom-setup
   setup-depends:
@@ -35,9 +35,12 @@ custom-setup
 
 library
   exposed-modules:
-      Language.HMX.Impl.FreeFoil
+      Language.HMX.Impl.Constraint
+      Language.HMX.Impl.Eval
+      Language.HMX.Impl.Interpret
+      Language.HMX.Impl.Syntax
+      Language.HMX.Impl.Typecheck
       Language.HMX.Syntax.Abs
-      Language.HMX.Syntax.Layout
       Language.HMX.Syntax.Lex
       Language.HMX.Syntax.Par
       Language.HMX.Syntax.Print
@@ -118,6 +121,7 @@ test-suite spec
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      HMX.TypecheckTest
       Paths_hmx
   hs-source-dirs:
       test
