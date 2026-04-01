@@ -16,7 +16,7 @@ import qualified Control.Monad.Free.Foil as FreeFoil
 import Data.Bifunctor
 import qualified Data.Foldable as F
 
-import Data.ZipMatchK (zipMatchK)
+import Data.ZipMatchK 
 
 import qualified Data.IntMap as IntMap
 import qualified Language.HMX.Syntax.Abs as HMX
@@ -58,7 +58,7 @@ unify1 c =
     (FreeFoil.Node l, FreeFoil.Node r) ->
       -- zipMatch (TFuncSig x1 x2) (TArrowSig y1 y2)
       --   = Just (TFuncSig (x1, y1) (x2, y2))
-      case zipMatchK l r of
+      case zipMatch2 l r of
         Nothing -> Left ("cannot unify " ++ show c)
         -- `zipMatch` takes out corresponding terms from a node that we need
         --  to unify further.

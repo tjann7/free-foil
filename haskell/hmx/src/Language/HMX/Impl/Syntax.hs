@@ -84,8 +84,8 @@ deriveBifunctor ''TypeSig
 deriveBifoldable ''TypeSig
 deriveBitraversable ''TypeSig
 
---instance (GenericK f, GZipMatchK (RepK f)) => ZipMatchK f
---ZipMatchK TypeSig
+instance ZipMatchK TypeSig
+instance ZipMatchK HMX.UVarIdent where zipMatchWithK = zipMatchViaEq
 
 -- Pattern synonyms
 
@@ -199,6 +199,7 @@ instance IsString (Type Foil.VoidS) where
 instance Show (Type n) where
   show = HMX.printTree . fromType
 
+-- TODO: does not work
 --instance Eq (Type Foil.VoidS) where
 --  (==) = alphaEquiv Foil.emptyScope
 
