@@ -73,6 +73,9 @@ deriveCoSinkable ''HMX.VarIdent ''HMX.Pattern
 mkToFoilPattern ''HMX.VarIdent ''HMX.Pattern
 mkFromFoilPattern ''HMX.VarIdent ''HMX.Pattern
 
+deriveGenericK ''FoilPattern
+instance Foil.SinkableK FoilPattern
+
 -- Generated code (types)
 
 -- Signature
@@ -104,6 +107,9 @@ mkFoilPattern ''HMX.VarIdent ''HMX.TypePattern
 deriveCoSinkable ''HMX.VarIdent ''HMX.TypePattern
 mkToFoilPattern ''HMX.VarIdent ''HMX.TypePattern
 mkFromFoilPattern ''HMX.VarIdent ''HMX.TypePattern
+
+deriveGenericK ''FoilTypePattern
+instance Foil.SinkableK FoilTypePattern
 
 -- User-defined Code
 
