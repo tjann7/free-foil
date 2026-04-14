@@ -122,7 +122,7 @@ type Type' = Type Foil.VoidS
 
 -- Conversion helpers (expressions)
 
--- | Convert 'HMX.Exp' into a scope-safe expression.
+-- | Convert 'HMX.Expr' into a scope-safe expression.
 -- This is a special case of 'convertToAST'.
 toExpr :: (Foil.Distinct n) => Foil.Scope n -> Map HMX.VarIdent (Foil.Name n) -> HMX.Expr -> AST FoilPattern ExprSig n
 toExpr = convertToAST convertToExprSig toFoilPattern getExprFromScopedExpr
@@ -132,7 +132,7 @@ toExpr = convertToAST convertToExprSig toFoilPattern getExprFromScopedExpr
 toExprClosed :: HMX.Expr -> Expr Foil.VoidS
 toExprClosed = toExpr Foil.emptyScope Map.empty
 
--- | Convert a scope-safe representation back into 'HMX.Exp'.
+-- | Convert a scope-safe representation back into 'HMX.Expr'.
 -- This is a special case of 'convertFromAST'.
 --
 -- 'HMX.VarIdent' names are generated based on the raw identifiers in the underlying foil representation.
